@@ -1,5 +1,4 @@
 fichier readme.md 
-![Editor _ Mermaid Chart-2025-06-04-003202 (2)](https://github.com/user-attachments/assets/974506a0-0f4d-4c58-960b-641270a97a89)
 ![Editor _ Mermaid Chart-2025-06-04-003202](https://github.com/user-attachments/assets/6a1126bb-f3b1-455d-8086-2851c14106b7)
 ![Editor _ Mermaid Chart-2025-06-04-003459](https://github.com/user-attachments/assets/892ef14f-340c-4bb7-b52d-273b4776cc5a)
 ![Editor _ Mermaid Chart-2025-06-04-003202 (1)](https://github.com/user-attachments/assets/db580254-8102-4444-b703-cef5f408951f)
