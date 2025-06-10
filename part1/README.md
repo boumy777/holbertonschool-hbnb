@@ -1,7 +1,3 @@
-Bien sûr, je peux créer un README complet et structuré à partir des informations que vous avez fournies pour la première partie de votre projet HBnB Evolution. Ce README servira de documentation technique initiale.
-
-Voici le README détaillé :
-
 Projet HBnB Evolution - Documentation Technique (Partie 1)
 Table des matières
 Introduction
