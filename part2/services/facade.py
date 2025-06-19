@@ -56,4 +56,3 @@ def update_amenity(amenity_id, data):
         amenity.name = data["name"]
         amenity.save()
     return amenity.to_dict()
-
