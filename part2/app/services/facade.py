@@ -63,25 +63,68 @@ class HBNBFacade:
 
     # ──────────── PLACE ────────────
 
-    def create_place(self, place_data):
-        pass
+ def create_place(self, place_data):
+        # Vérification existence du owner
+        owner = self.user_repo.get(place_data['owner_id'])
+        if not owner:
+            raise ValueError("Owner not found")
+
+        # Validation des données
+        if place_data['price'] < 0:
+            raise ValueError("Price must be positive")
+        if not (-90 <= place_data['latitude'] <= 90):
+            raise ValueError("Latitude must be between -90 and 90")
+        if not (-180 <= place_data['longitude'] <= 180):
+            raise ValueError("Longitude must be between -180 and 180")
+
+        # Création de l'ID et de l'objet
+        place_id = str(uuid.uuid4())
+        new_place = Place(
+            id=place_id,
+            title=place_data['title'],
+            description=place_data['description'],
+            price=place_data['price'],
+            latitude=place_data['latitude'],
+            longitude=place_data['longitude'],
+            owner_id=place_data['owner_id']
+        )
+
+        # Ajout au repo
+        self.place_repo.add(new_place)
+        return new_place
 
     def get_place(self, place_id):
-
-        pass
+        place = self.place_repo.get(place_id)
+        if not place:
+            raise ValueError("Place not found")
+        return place
 
     def get_all_places(self):
-
-        pass
+        return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
+        place = self.place_repo.get(place_id)
+        if not place:
+            raise ValueError("Place not found")
 
-        pass
+        # Validation des champs à mettre à jour
+        if 'price' in place_data and place_data['price'] < 0:
+            raise ValueError("Price must be positive")
+        if 'latitude' in place_data and not (-90 <= place_data['latitude'] <= 90):
+            raise ValueError("Latitude must be between -90 and 90")
+        if 'longitude' in place_data and not (-180 <= place_data['longitude'] <= 180):
+            raise ValueError("Longitude must be between -180 and 180")
+
+        # Mise à jour
+        self.place_repo.update(place_id, place_data)
+        return self.place_repo.get(place_id)
 
     def delete_place(self, place_id):
-
-        pass
-
+        place = self.place_repo.get(place_id)
+        if not place:
+            raise ValueError("Place not found")
+        self.place_repo.delete(place_id)
+        return {"message": "Place deleted successfully"}
     # ──────────── REVIEW ────────────
 
     #Create a new review, ensuring all required fields are present and valid.
