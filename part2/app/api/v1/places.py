@@ -1,11 +1,38 @@
 import uuid
 from flask import request
+from app.services import facade
 from flask_restx import Resource, Namespace, fields
 
 api = Namespace('places', description='Places related operations')
 
 # In-memory storage for places
 places = []
+
+# Define the amenity model for the amenities associated with a place
+amenity_model = api.model('PlaceAmenity',
+                            {
+                                'id': fields.String(description='Amenity ID'),
+                                'name': fields.String(description='Name of the amenity')
+                            })
+
+# Define the user model for the owner of the place
+user_model = api.model('PlaceUser',
+                        {
+                            'id': fields.String(description='User ID'),
+                            'first_name': fields.String(description='First name of the owner'),
+                            'last_name': fields.String(description='Last name of the owner'),
+                            'email': fields.String(description='Email of the owner')
+                        })
+
+# Adding the review model
+review_model = api.model('PlaceReview',
+                        {
+                            'id': fields.String(description='Review ID'),
+                            'text': fields.String(description='Text of the review'),
+                            'rating': fields.Integer(description='Rating of the place (1-5)'),
+                            'user_id': fields.String(description='ID of the user')
+                        })
+
 # This is a simple in-memory storage for demonstration purposes.
 # In a real application, you would use a database or persistent storage.
 place_model = api.model('Place',
@@ -17,6 +44,8 @@ place_model = api.model('Place',
                             'latitude': fields.Float(required=True, description='The latitude of the place'),
                             'longitude': fields.Float(required=True, description='The longitude of the place'),
                             'owner_id': fields.String(required=True, description='The owner ID of the place'),
+                            'amenities': fields.List(fields.Nested(amenity_model), description='List of amenities for the place'),
+                            'reviews': fields.List(fields.Nested(review_model), description='List of reviews for the place'),
                         })
 
 
@@ -57,7 +86,8 @@ class PlaceList(Resource):
             'longitude': data_received.get('longitude'),
             'owner_id': data_received.get('owner_id'),
         }
-        places.append(new_place) # Add the new place to the in-memory storage
+
+        places.append(new_place) # add the new place to the in-memory storage
 
         # Validate the input data
         if not new_place['title'] or not new_place['description'] or not isinstance(new_place['price'], (float, int)) or \

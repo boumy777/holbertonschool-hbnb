@@ -4,6 +4,7 @@ from repository import storage
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.review import Review
+from app.models.place import Place
 from app.models.base_model import to_dict
 
 
@@ -158,12 +159,25 @@ class HBNBFacade:
                 raise ValueError("{} must be a non-empty string".format(field))
             
         # Verify that place_id and user_id exist in the database
-        place = storage.get('Place', review_data['place_id'])
+        place = storage.get(Place, review_data['place_id'])
         if not place:
             raise ValueError("Place with ID {} does not exist".format(review_data['place_id']))
-        user = storage.get('User', review_data['user_id'])
+        user = storage.get(User, review_data['user_id'])
         if not user:
             raise ValueError("User with ID {} does not exist".format(review_data['user_id']))
+        
+        # Créer et enregistrer le nouvel objet Review
+        review = Review(
+            text=review_data['text'],
+            rating=review_data['rating'],
+            place_id=review_data['place_id'],
+            user_id=review_data['user_id']
+        )
+        
+        # Save the review to storage
+        storage.new(review)
+        storage.save()
+        return review.to_dict()
 
     # Create a new review and return it as a dictionary.
     def get_review(self, review_id):
