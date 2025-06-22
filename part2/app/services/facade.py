@@ -1,5 +1,6 @@
 # business/facade.py
 
+import uuid
 from repository import storage
 from app.models.user import User
 from app.models.amenity import Amenity
@@ -64,7 +65,7 @@ class HBNBFacade:
 
     # ──────────── PLACE ────────────
 
- def create_place(self, place_data):
+    def create_place(self, place_data):
         # Vérification existence du owner
         owner = self.user_repo.get(place_data['owner_id'])
         if not owner:
