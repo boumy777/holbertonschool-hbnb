@@ -3,7 +3,7 @@
 
 import uuid
 from datetime import datetime
-from repository import storage
+from app.persistence.repository import storage
 
 
 class BaseModel:

@@ -1,6 +1,6 @@
-# business/models/user.py
+# app/models/user.py
 
-from business.models.base_model import BaseModel
+from app.models.base_model import BaseModel
 
 class User(BaseModel):
     def __init__(self, *args, **kwargs):

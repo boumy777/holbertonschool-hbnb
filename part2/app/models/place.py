@@ -41,3 +41,58 @@ class Place(BaseModel):
         self.longitude = longitude
         self.owner_id = owner_id
         self.amenities = []
+        self._created_at = datetime.utcnow()
+        self._updated_at = datetime.utcnow()
+        if owner_id is None:
+            raise ValueError("Invalid owner_id")
+        else:
+            self.owner_id = UUID(owner_id)
+    @property
+    def price(self):
+        return (self._price)
+    @price.setter
+    def price(self, value):
+        if not isinstance(value, (float, int)):
+            raise TypeError("Price must be a float")
+        if value < 0:
+            raise ValueError("Price cannot be negative")
+        self._price = value
+
+    @property
+    def latitude(self):
+        return (self._latitude)
+    @latitude.setter
+    def latitude(self, value):
+        if not isinstance(value, float):
+            raise TypeError("Latitude must be a float")
+        if value < -90 or value > 90:
+            raise ValueError("Latitude must be between -90 and 90")
+        self._latitude = value
+
+    @property
+    def longitude(self):
+        return (self._longitude)
+    @longitude.setter
+    def longitude(self, value):
+        if not isinstance(value, float):
+            raise TypeError("Longitude must be a float")
+        if value < -180 or value > 180:
+            raise ValueError("Longitude must be between -180 and 180")
+        self._longitude = value
+    
+    @property
+    def updated_at(self):
+        return self._updated_at
+
+    def create_place(self, place_data):
+        pass
+
+    def get_place(self, place_id):
+        pass
+
+    def get_all_places(self):
+        pass
+
+    def update_place(self, place_id, place_data):
+        pass
+
