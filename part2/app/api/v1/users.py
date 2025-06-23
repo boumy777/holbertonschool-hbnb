@@ -1,62 +1,56 @@
-# api/v1/views/users.py
-
 from flask import request
 from flask_restx import Namespace, Resource, fields
-from business.facade import facade
+from app.services.facade import facade
 
-api = Namespace('users', description='User operations')
+api = Namespace("users", description="User management")
 
-# Modèle pour afficher un utilisateur (sans le mot de passe)
-user_model = api.model('User', {
-    'id': fields.String(readonly=True),
-    'email': fields.String(required=True),
-    'first_name': fields.String,
-    'last_name': fields.String
-})
-
-# Modèle utilisé pour la création (inclut le password)
-user_create_model = api.model('UserCreate', {
-    'email': fields.String(required=True),
-    'password': fields.String(required=True),
-    'first_name': fields.String,
-    'last_name': fields.String
+user_model = api.model("User", {
+    "id": fields.String(readOnly=True, description="Unique identifier"),
+    "email": fields.String(required=True, description="Email address"),
+    "first_name": fields.String(required=False, description="First name"),
+    "last_name": fields.String(required=False, description="Last name"),
+    "created_at": fields.String(readOnly=True, description="Creation timestamp"),
+    "updated_at": fields.String(readOnly=True, description="Update timestamp")
 })
 
 
-@api.route('/')
+@api.route("/")
 class UserList(Resource):
     @api.marshal_list_with(user_model)
     def get(self):
-        """Get all users"""
-        return facade.get_all_users()
+        """Retrieve all users (excluding passwords)"""
+        users = facade.get_all("User")
+        for user in users:
+            user.pop("password", None)
+        return users
 
-    @api.expect(user_create_model)
+    @api.expect(user_model, validate=True)
     @api.marshal_with(user_model, code=201)
     def post(self):
         """Create a new user"""
         data = request.json
-        user = facade.create_user(data)
-        return user, 201
+        return facade.create("User", data), 201
 
 
-@api.route('/<user_id>')
-@api.param('user_id', 'The user ID')
-class UserResource(Resource):
+@api.route("/<string:user_id>")
+@api.param("user_id", "The user identifier")
+class UserDetail(Resource):
     @api.marshal_with(user_model)
     def get(self, user_id):
-        """Get a single user by ID"""
-        user = facade.get_user(user_id)
-        if not user:
-            api.abort(404, "User not found")
-        return user
+        """Retrieve a user by ID (excluding password)"""
+        user = facade.get("User", user_id)
+        if user:
+            user.pop("password", None)
+            return user
+        api.abort(404, "User not found")
 
-    @api.expect(user_model)
+    @api.expect(user_model, validate=True)
     @api.marshal_with(user_model)
     def put(self, user_id):
-        """Update an existing user"""
+        """Update a user by ID"""
         data = request.json
-        user = facade.update_user(user_id, data)
-        if not user:
-            api.abort(404, "User not found")
-        return user
-
+        updated = facade.update("User", user_id, data)
+        if updated:
+            updated.pop("password", None)
+            return updated
+        api.abort(404, "User not found")

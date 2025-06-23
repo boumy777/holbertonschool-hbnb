@@ -1,4 +1,4 @@
-# business/__init__.py
+# app/services/__init__.py
 
-from business import models
-from business.facade import facade
+from app import models
+from app.services.facade import facade

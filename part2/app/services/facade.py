@@ -1,235 +1,66 @@
-# business/facade.py
-
-import uuid
-from repository import storage
-from app.models.user import User
-from app.models.amenity import Amenity
-from app.models.review import Review
-from app.models.place import Place
-from app.models.base_model import to_dict
+from app.models import user, place, review, amenity
+from app.persistence.repository import storage
 
 
-class HBNBFacade:
-    # ───────────── USER ─────────────
+class Facade:
+    def __init__(self):
+        self.storage = storage
+        self.model_map = {
+            "User": user.User,
+            "Place": place.Place,
+            "Review": review.Review,
+	    "Amenity": amenity.Amenity,
 
-    def get_all_users(self):
-        users = storage.all(User).values()
-        return [user.to_dict(strip_password=True) for user in users]
+        }
 
-    def get_user(self, user_id):
-        user = storage.get(User, user_id)
-        return user.to_dict(strip_password=True) if user else None
+    def create(self, model_name, data):
+        model_cls = self.model_map.get(model_name)
+        if not model_cls:
+            raise ValueError("Invalid model name")
 
-    def create_user(self, data):
-        if not data.get("email") or not data.get("password"):
-            raise ValueError("Missing email or password")
-        user = User(**data)
-        user.save()
-        return user.to_dict(strip_password=True)
+        obj = model_cls(**data)
+        self.storage.save(obj)
+        return obj.to_dict()
 
-    def update_user(self, user_id, data):
-        user = storage.get(User, user_id)
-        if not user:
-            return None
-        for field in ["email", "first_name", "last_name"]:
-            if field in data:
-                setattr(user, field, data[field])
-        user.save()
-        return user.to_dict(strip_password=True)
+    def get_all(self, model_name):
+        model_cls = self.model_map.get(model_name)
+        if not model_cls:
+            raise ValueError("Invalid model name")
 
-    # ──────────── AMENITY ────────────
+        return [obj.to_dict() for obj in self.storage.all(model_cls).values()]
 
-    def get_all_amenities(self):
-        amenities = storage.all(Amenity).values()
-        return [a.to_dict() for a in amenities]
+    def get_by_id(self, model_name, obj_id):
+        model_cls = self.model_map.get(model_name)
+        if not model_cls:
+            raise ValueError("Invalid model name")
 
-    def get_amenity(self, amenity_id):
-        amenity = storage.get(Amenity, amenity_id)
-        return amenity.to_dict() if amenity else None
+        obj = self.storage.get(model_cls, obj_id)
+        return obj.to_dict() if obj else None
 
-    def create_amenity(self, data):
-        if not data.get("name"):
-            raise ValueError("Missing name")
-        amenity = Amenity(**data)
-        amenity.save()
-        return amenity.to_dict()
+    def delete(self, model_name, obj_id):
+        model_cls = self.model_map.get(model_name)
+        if not model_cls:
+            raise ValueError("Invalid model name")
 
-    def update_amenity(self, amenity_id, data):
-        amenity = storage.get(Amenity, amenity_id)
-        if not amenity:
-            return None
-        if "name" in data:
-            amenity.name = data["name"]
-            amenity.save()
-        return amenity.to_dict()
+        obj = self.storage.get(model_cls, obj_id)
+        if obj:
+            self.storage.delete(obj)
+            return True
+        return False
 
-    # ──────────── PLACE ────────────
+    # Méthodes spécifiques à Review (exploitées dans reviews.py)
+    def create_review(self, data):
+        return self.create("Review", data)
 
-    def create_place(self, place_data):
-        # Vérification existence du owner
-        owner = self.user_repo.get(place_data['owner_id'])
-        if not owner:
-            raise ValueError("Owner not found")
-
-        # Validation des données
-        if place_data['price'] < 0:
-            raise ValueError("Price must be positive")
-        if not (-90 <= place_data['latitude'] <= 90):
-            raise ValueError("Latitude must be between -90 and 90")
-        if not (-180 <= place_data['longitude'] <= 180):
-            raise ValueError("Longitude must be between -180 and 180")
-
-        # Création de l'ID et de l'objet
-        place_id = str(uuid.uuid4())
-        new_place = Place(
-            id=place_id,
-            title=place_data['title'],
-            description=place_data['description'],
-            price=place_data['price'],
-            latitude=place_data['latitude'],
-            longitude=place_data['longitude'],
-            owner_id=place_data['owner_id']
-        )
-
-        # Ajout au repo
-        self.place_repo.add(new_place)
-        return new_place
-
-    def get_place(self, place_id):
-        place = self.place_repo.get(place_id)
-        if not place:
-            raise ValueError("Place not found")
-        return place
-
-    def get_all_places(self):
-        return self.place_repo.get_all()
-
-    def update_place(self, place_id, place_data):
-        place = self.place_repo.get(place_id)
-        if not place:
-            raise ValueError("Place not found")
-
-        # Validation des champs à mettre à jour
-        if 'price' in place_data and place_data['price'] < 0:
-            raise ValueError("Price must be positive")
-        if 'latitude' in place_data and not (-90 <= place_data['latitude'] <= 90):
-            raise ValueError("Latitude must be between -90 and 90")
-        if 'longitude' in place_data and not (-180 <= place_data['longitude'] <= 180):
-            raise ValueError("Longitude must be between -180 and 180")
-
-        # Mise à jour
-        self.place_repo.update(place_id, place_data)
-        return self.place_repo.get(place_id)
-
-    def delete_place(self, place_id):
-        place = self.place_repo.get(place_id)
-        if not place:
-            raise ValueError("Place not found")
-        self.place_repo.delete(place_id)
-        return {"message": "Place deleted successfully"}
-    # ──────────── REVIEW ────────────
-
-    #Create a new review, ensuring all required fields are present and valid.
-    def create_review(self, review_data):
-
-        # Fields required for a review
-        required_fields = ['text','rating','place_id','user_id']
-
-        # Check if all required fields are present and valid
-        for field in required_fields:
-            if field not in review_data:
-                raise ValueError("Missing required field: {}".format(field))
-            
-        # Verify the types and values of the fields
-        if not isinstance(review_data['text'], str) or review_data['text'] == "":
-            raise ValueError("Text must be a non-empty string")
-        
-        # Check if rating is an integer between 1 and 5
-        if not isinstance(review_data['rating'], int):
-            raise ValueError("Rating must be an integer")
-        if review_data['rating'] < 1 or review_data['rating'] > 5:
-            raise ValueError("Rating must be between 1 and 5")
-        
-        # Check if place_id and user_id are non-empty strings
-        # List of fields that should be non-empty strings
-        id_fields = ['place_id', 'user_id']
-
-        # Ensure place_id and user_id are non-empty strings
-        for field in id_fields:
-            if not isinstance(review_data[field], str) or review_data[field] == "":
-                raise ValueError("{} must be a non-empty string".format(field))
-            
-        # Verify that place_id and user_id exist in the database
-        place = storage.get(Place, review_data['place_id'])
-        if not place:
-            raise ValueError("Place with ID {} does not exist".format(review_data['place_id']))
-        user = storage.get(User, review_data['user_id'])
-        if not user:
-            raise ValueError("User with ID {} does not exist".format(review_data['user_id']))
-        
-        # Créer et enregistrer le nouvel objet Review
-        review = Review(
-            text=review_data['text'],
-            rating=review_data['rating'],
-            place_id=review_data['place_id'],
-            user_id=review_data['user_id']
-        )
-        
-        # Save the review to storage
-        storage.new(review)
-        storage.save()
-        return review.to_dict()
-
-    # Create a new review and return it as a dictionary.
-    def get_review(self, review_id):
-        all_reviews = storage.all(Review) # Retrieve all reviews from storage
-        for rev in all_reviews.values():
-            if rev.id == review_id:
-                return rev.to_dict()
-        return None
-
-    # Create a new review who takes all review_data and returns the review as a dictionary.
     def get_all_reviews(self):
-        reviews_storage = storage.all(Review).values()  # Retrieve all reviews from storage without filtering
-        if not reviews_storage:
-            return [] # return an empty list
-        return [review.to_dict() for review in reviews_storage]
+        return self.get_all("Review")
 
-    def get_reviews_by_place(self, place_id):
-        all_reviews = storage.all(Review)
-        similar_reviews = [] # Retrieve all reviews from storage
-        for review in all_reviews.values():
-            if review.place_id == place_id:
-                similar_reviews.append(review.to_dict()) # append == ajouter the review to the list if it matches the place_id
-        return similar_reviews
+    def get_review_by_id(self, review_id):
+        return self.get_by_id("Review", review_id)
 
-    # Update an existing review by its ID, ensuring the review exists and the data is valid.
-    def update_review(self, review_id, review_data):
-        all_reviews = storage.all(Review)
-        for review in all_reviews.values():
-            if review.id == review_id:
-                review.text = review_data.get('text', review.text)
-                review.rating = review_data.get('rating', review.rating)
-
-                # Validate the review data before saving
-                if not isinstance(review.text, str) or review.text == "":
-                    raise ValueError("Text must be a non-empty string")
-                if not isinstance(review.rating, int):
-                    raise ValueError("Rating must be an integer")
-                if review.rating < 1 or review.rating > 5:
-                    raise ValueError("Rating must be between 1 and 5")
-                
-        # Save the updated review
-        storage.save()
-        # Return the updated review as a dictionary if it exists else return None
-        return review.to_dict() if review else None
-    
-    # Delete a review by its ID, ensuring the review exists before deletion.
     def delete_review(self, review_id):
-        all_reviews = storage.all(Review)
-        for review in all_reviews.values():
-            if review.id == review_id:
-                storage.delete(review) # Delete the review from storage
-                storage.save()  # Save changes to storage
-                return review.to_dict()
-        return None  # Return None if the review was not found
+        return self.delete("Review", review_id)
+
+
+# Instance globale
+facade = Facade()

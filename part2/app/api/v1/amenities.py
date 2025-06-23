@@ -1,52 +1,47 @@
-# api/v1/views/amenities.py
-
 from flask import request
 from flask_restx import Namespace, Resource, fields
-from business.facade import facade
+from app.services.facade import facade
 
-api = Namespace('amenities', description='Amenity operations')
+api = Namespace("amenities", description="Operations related to amenities")
 
-# Modèle pour afficher/mettre à jour une amenity
-amenity_model = api.model('Amenity', {
-    'id': fields.String(readonly=True),
-    'name': fields.String(required=True)
+# Définir le modèle pour Swagger (documentation interactive)
+amenity_model = api.model("Amenity", {
+    "id": fields.String(readonly=True),
+    "name": fields.String(required=True, description="Name of the amenity"),
+    "created_at": fields.String(readonly=True),
+    "updated_at": fields.String(readonly=True),
 })
 
-
-@api.route('/')
+@api.route("/")
 class AmenityList(Resource):
     @api.marshal_list_with(amenity_model)
     def get(self):
-        """Get all amenities"""
-        return facade.get_all_amenities()
+        """List all amenities"""
+        return facade.get_all("Amenity")
 
     @api.expect(amenity_model)
     @api.marshal_with(amenity_model, code=201)
     def post(self):
         """Create a new amenity"""
-        data = request.json
-        amenity = facade.create_amenity(data)
-        return amenity, 201
+        data = request.get_json()
+        return facade.create("Amenity", data), 201
 
 
-@api.route('/<amenity_id>')
-@api.param('amenity_id', 'The Amenity ID')
+@api.route("/<string:amenity_id>")
+@api.param("amenity_id", "The Amenity identifier")
 class AmenityResource(Resource):
     @api.marshal_with(amenity_model)
     def get(self, amenity_id):
-        """Get a single amenity by ID"""
-        amenity = facade.get_amenity(amenity_id)
-        if not amenity:
-            api.abort(404, "Amenity not found")
-        return amenity
+        """Get a single amenity"""
+        return facade.get("Amenity", amenity_id)
 
     @api.expect(amenity_model)
     @api.marshal_with(amenity_model)
     def put(self, amenity_id):
-        """Update an existing amenity"""
-        data = request.json
-        amenity = facade.update_amenity(amenity_id, data)
-        if not amenity:
-            api.abort(404, "Amenity not found")
-        return amenity
+        """Update an amenity"""
+        data = request.get_json()
+        return facade.update("Amenity", amenity_id, data)
 
+    def delete(self, amenity_id):
+        """Delete an amenity"""
+        return facade.delete("Amenity", amenity_id), 204
