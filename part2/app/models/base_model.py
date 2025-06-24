@@ -2,26 +2,23 @@ import uuid
 from datetime import datetime
 
 class BaseModel:
-    def __init__(self, **kwargs):
-        self.id = kwargs.get("id", str(uuid.uuid4()))
+    # BaseModel serves as a base class for all models in the application.
+    def __init__(self, id, created_at=None, updated_at=None):
+        self.id = str(uuid.uuid4())
+        self.created_at = datetime.utcnow()
+        self.updated_at = datetime.utcnow()
 
-        # Parse created_at de manière sûre
-        self.created_at = self._parse_datetime(kwargs.get("created_at")) or datetime.utcnow()
-        self.updated_at = self._parse_datetime(kwargs.get("updated_at")) or self.created_at
+    def save(self):
+        # Update the updated_at attribute with the current datetime.
+        self.updated_at = datetime.utcnow()
 
-    def _parse_datetime(self, value):
-        if isinstance(value, datetime):
-            return value
-        if isinstance(value, str):
-            try:
-                return datetime.fromisoformat(value)
-            except ValueError:
-                return None
-        return None
+    def update(self, data):
+        # Update the instance attributes with the provided data.
+        for key, value in data.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
+        self.save()
 
     def to_dict(self):
-        return {
-            "id": self.id,
-            "created_at": self.created_at.isoformat(),
-            "updated_at": self.updated_at.isoformat()
-        }
+        # Convert the instance to a dictionary.
+        return self.__dict__
