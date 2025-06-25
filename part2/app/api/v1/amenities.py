@@ -1,47 +1,56 @@
-from flask import request
 from flask_restx import Namespace, Resource, fields
-from app.services.facade import facade
+from app.services.facade import HBnBFacade
 
-api = Namespace("amenities", description="Operations related to amenities")
+api = Namespace('amenities', description='Amenity operations')
+facade = HBnBFacade()
 
-# Définir le modèle pour Swagger (documentation interactive)
-amenity_model = api.model("Amenity", {
-    "id": fields.String(readonly=True),
-    "name": fields.String(required=True, description="Name of the amenity"),
-    "created_at": fields.String(readonly=True),
-    "updated_at": fields.String(readonly=True),
+amenity_model = api.model('Amenity', {
+    'name': fields.String(required=True, description='Name of the amenity')
 })
 
-@api.route("/")
+@api.route('/')
 class AmenityList(Resource):
-    @api.marshal_list_with(amenity_model)
-    def get(self):
-        """List all amenities"""
-        return facade.get_all("Amenity")
-
     @api.expect(amenity_model)
-    @api.marshal_with(amenity_model, code=201)
+    @api.response(201, 'Amenity successfully created')
+    @api.response(400, 'Invalid input data')
     def post(self):
-        """Create a new amenity"""
-        data = request.get_json()
-        return facade.create("Amenity", data), 201
+        """Register a new amenity"""
+        data = api.payload
+        try:
+            amenity = facade.create_amenity(data)
+            return {'id': amenity.id, 'name': amenity.name}, 201
+        except ValueError as e:
+            api.abort(400, str(e))
 
+    @api.response(200, 'List of amenities retrieved successfully')
+    def get(self):
+        """Retrieve a list of all amenities"""
+        amenities = facade.get_all_amenities()
+        return [{'id': a.id, 'name': a.name} for a in amenities], 200
 
-@api.route("/<string:amenity_id>")
-@api.param("amenity_id", "The Amenity identifier")
+@api.route('/<string:amenity_id>')
 class AmenityResource(Resource):
-    @api.marshal_with(amenity_model)
+    @api.response(200, 'Amenity details retrieved successfully')
+    @api.response(404, 'Amenity not found')
     def get(self, amenity_id):
-        """Get a single amenity"""
-        return facade.get("Amenity", amenity_id)
+        """Get amenity details by ID"""
+        try:
+            amenity = facade.get_amenity(amenity_id)
+            return {'id': amenity.id, 'name': amenity.name}, 200
+        except LookupError:
+            api.abort(404, 'Amenity not found')
 
     @api.expect(amenity_model)
-    @api.marshal_with(amenity_model)
+    @api.response(200, 'Amenity updated successfully')
+    @api.response(400, 'Invalid input data')
+    @api.response(404, 'Amenity not found')
     def put(self, amenity_id):
-        """Update an amenity"""
-        data = request.get_json()
-        return facade.update("Amenity", amenity_id, data)
-
-    def delete(self, amenity_id):
-        """Delete an amenity"""
-        return facade.delete("Amenity", amenity_id), 204
+        """Update an amenity's information"""
+        data = api.payload
+        try:
+            amenity = facade.update_amenity(amenity_id, data)
+            return {'message': 'Amenity updated successfully'}, 200
+        except LookupError:
+            api.abort(404, 'Amenity not found')
+        except ValueError as e:
+            api.abort(400, str(e))
