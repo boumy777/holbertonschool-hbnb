@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+*.egg-info/
+.pytest_cache/
+.coverage
+
+# Environnements virtuels
+.venv/
+venv/
+env/
+
+# Fichiers de log, etc. (ajouts possibles)
+*.log
+*.sqlite3
