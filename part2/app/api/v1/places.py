@@ -23,23 +23,23 @@ class PlaceList(Resource):
         return new_place.to_dict(), 201
 
 
-@api.route("/<string:id>")
+@api.route('/<place_id>')
 class PlaceResource(Resource):
-    def get(self, id):
-        place = facade.get_by_id("Place", id)
+    def get(self, place_id):
+        place = facade.get_by_id("Place", place_id)
         if not place:
             api.abort(404, "Place not found")
         return place.to_dict()
 
-    def put(self, id):
+    def put(self, place_id):
         data = api.payload
-        updated = facade.update("Place", id, data)
+        updated = facade.update("Place", place_id, data)
         if not updated:
             api.abort(404, "Place not found")
         return updated.to_dict()
 
-    def delete(self, id):
-        success = facade.delete("Place", id)
+    def delete(self, place_id):
+        success = facade.delete("Place", place_id)
         if not success:
             api.abort(404, "Place not found")
         return {"message": "Deleted successfully"}
