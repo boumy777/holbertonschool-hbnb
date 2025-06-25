@@ -1,66 +1,89 @@
-from app.models import user, place, review, amenity
-from app.persistence.repository import storage
+from app.models.user import User
+from app.models.place import Place
+from app.models.review import Review
+from app.models.amenity import Amenity
+from app.persistence.repository import InMemoryRepository
 
 
-class Facade:
+
+class HBnBFacade:
     def __init__(self):
-        self.storage = storage
-        self.model_map = {
-            "User": user.User,
-            "Place": place.Place,
-            "Review": review.Review,
-	    "Amenity": amenity.Amenity,
+        self.user_repo = InMemoryRepository()
+        self.place_repo = InMemoryRepository()
+        self.review_repo = InMemoryRepository()
+        self.amenity_repo = InMemoryRepository()
+    
+    # ___________ User ___________
 
-        }
+    def create_user(self, user_data):
+        user = User(**user_data)
+        self.user_repo.add(user)
+        return user
 
-    def create(self, model_name, data):
-        model_cls = self.model_map.get(model_name)
-        if not model_cls:
-            raise ValueError("Invalid model name")
+    def get_user(self, user_id):
+        return self.user_repo.get(user_id)
 
-        obj = model_cls(**data)
-        self.storage.save(obj)
-        return obj.to_dict()
+    def get_user_by_email(self, email):
+        return self.user_repo.get_by_attribute('email', email)
 
-    def get_all(self, model_name):
-        model_cls = self.model_map.get(model_name)
-        if not model_cls:
-            raise ValueError("Invalid model name")
+    # ___________ Amenity ___________
+    
+    def create_amenity(self, amenity_data):
+    # Placeholder for logic to create an amenity
+        pass
 
-        return [obj.to_dict() for obj in self.storage.all(model_cls).values()]
+    def get_amenity(self, amenity_id):
+        # Placeholder for logic to retrieve an amenity by ID
+        pass
 
-    def get_by_id(self, model_name, obj_id):
-        model_cls = self.model_map.get(model_name)
-        if not model_cls:
-            raise ValueError("Invalid model name")
+    def get_all_amenities(self):
+        # Placeholder for logic to retrieve all amenities
+        pass
 
-        obj = self.storage.get(model_cls, obj_id)
-        return obj.to_dict() if obj else None
+    def update_amenity(self, amenity_id, amenity_data):
+        # Placeholder for logic to update an amenity
+        pass
 
-    def delete(self, model_name, obj_id):
-        model_cls = self.model_map.get(model_name)
-        if not model_cls:
-            raise ValueError("Invalid model name")
+    # ___________ Place ___________
 
-        obj = self.storage.get(model_cls, obj_id)
-        if obj:
-            self.storage.delete(obj)
-            return True
-        return False
+    def create_place(self, place_data):
+    # Placeholder for logic to create a place, including validation for price, latitude, and longitude
+        pass
 
-    # Méthodes spécifiques à Review (exploitées dans reviews.py)
-    def create_review(self, data):
-        return self.create("Review", data)
+    def get_place(self, place_id):
+        # Placeholder for logic to retrieve a place by ID, including associated owner and amenities
+        pass
+
+    def get_all_places(self):
+        # Placeholder for logic to retrieve all places
+        pass
+
+    def update_place(self, place_id, place_data):
+        # Placeholder for logic to update a place
+        pass
+    
+    # ___________ Review ___________
+
+    def create_review(self, review_data):
+    # Placeholder for logic to create a review, including validation for user_id, place_id, and rating
+        pass
+
+    def get_review(self, review_id):
+        # Placeholder for logic to retrieve a review by ID
+        pass
 
     def get_all_reviews(self):
-        return self.get_all("Review")
+        # Placeholder for logic to retrieve all reviews
+        pass
 
-    def get_review_by_id(self, review_id):
-        return self.get_by_id("Review", review_id)
+    def get_reviews_by_place(self, place_id):
+        # Placeholder for logic to retrieve all reviews for a specific place
+        pass
+
+    def update_review(self, review_id, review_data):
+        # Placeholder for logic to update a review
+        pass
 
     def delete_review(self, review_id):
-        return self.delete("Review", review_id)
-
-
-# Instance globale
-facade = Facade()
+        # Placeholder for logic to delete a review
+        pass
