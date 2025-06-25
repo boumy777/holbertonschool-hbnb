@@ -28,21 +28,30 @@ class HBnBFacade:
 
     # ___________ Amenity ___________
     
-    def create_amenity(self, amenity_data):
-    # Placeholder for logic to create an amenity
-        pass
+    def get_all():
+        return storage.all(Amenity)
 
-    def get_amenity(self, amenity_id):
-        # Placeholder for logic to retrieve an amenity by ID
-        pass
+    def get_by_id(amenity_id):
+        return storage.get(Amenity, amenity_id)
 
-    def get_all_amenities(self):
-        # Placeholder for logic to retrieve all amenities
-        pass
+    def create(data):
+        new_amenity = Amenity()
+        for key, value in data.items():
+            if hasattr(new_amenity, key):
+                setattr(new_amenity, key, value)
+        storage.save(new_amenity)
+        return new_amenity
 
-    def update_amenity(self, amenity_id, amenity_data):
-        # Placeholder for logic to update an amenity
-        pass
+    def update(amenity_id, data):
+        amenity = storage.get(Amenity, amenity_id)
+        if amenity:
+            amenity.update(data)
+            storage.save(amenity)
+        return amenity
+
+    def delete(amenity_id):
+        return storage.delete(Amenity, amenity_id)
+
 
     # ___________ Place ___________
 
