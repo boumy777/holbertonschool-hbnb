@@ -1,4 +1,3 @@
-from app import storage
 from app.models.user import User
 from app.models.place import Place
 from app.models.review import Review
@@ -159,3 +158,4 @@ class HBnBFacade:
                 return review.to_dict() # Convert the review to a dictionary and return it
         return None  # Return None if the review was not found
 
+facade = HBnBFacade()
