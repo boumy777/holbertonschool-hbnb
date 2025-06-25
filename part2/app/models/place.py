@@ -1,6 +1,6 @@
 from app.models import user
 from app.models.base_model import BaseModel
-from exo8 import User
+from app.models.user import User  # ✅ correct si utilisé dans la méthode ou pour des annotations
 
 class Place(BaseModel):
     def __init__(self, title, description, price, latitude, longitude, owner_id):
