@@ -12,7 +12,63 @@ class HBnBFacade:
         self.place_repo = InMemoryRepository()
         self.review_repo = InMemoryRepository()
         self.amenity_repo = InMemoryRepository()
-    
+
+
+    def get(self, model_name, obj_id):
+        repo_map = {
+            "User": self.user_repo,
+            "Place": self.place_repo,
+            "Review": self.review_repo,
+            "Amenity": self.amenity_repo
+        }
+        model_map = {
+            "User": User,
+            "Place": Place,
+            "Review": Review,
+            "Amenity": Amenity
+        }
+
+        repo = repo_map.get(model_name)
+        model_cls = model_map.get(model_name)
+
+        if not repo or not model_cls:
+            raise ValueError(f"Unknown model: {model_name}")
+
+        obj = repo.get(model_cls, obj_id)
+        return obj.to_dict() if obj else None
+
+    def update(self, model_name, obj_id, data):
+        repo_map = {
+            "User": self.user_repo,
+            "Place": self.place_repo,
+            "Review": self.review_repo,
+            "Amenity": self.amenity_repo
+        }
+        model_map = {
+            "User": User,
+            "Place": Place,
+            "Review": Review,
+            "Amenity": Amenity
+        }
+
+        repo = repo_map.get(model_name)
+        model_cls = model_map.get(model_name)
+
+        if not repo or not model_cls:
+            raise ValueError(f"Unknown model: {model_name}")
+
+        obj = repo.get(model_cls, obj_id)
+        if not obj:
+            return None
+
+    # Appliquer la mise à jour champ par champ
+        for key, value in data.items():
+            if hasattr(obj, key):
+                setattr(obj, key, value)
+
+        return obj.to_dict()
+
+
     # ___________ User ___________
 
     def create_user(self, user_data):
