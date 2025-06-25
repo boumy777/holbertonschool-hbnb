@@ -1,3 +1,4 @@
+from app import storage
 from app.models.user import User
 from app.models.place import Place
 from app.models.review import Review
@@ -47,8 +48,19 @@ class HBnBFacade:
     # ___________ Place ___________
 
     def create_place(self, place_data):
-    # Placeholder for logic to create a place, including validation for price, latitude, and longitude
-        pass
+        # Validate required fields for place creation
+        required_fields = ['title', 'description', 'price', 'latitude', 'longitude', 'owner_id']
+
+        # Ensure all required fields are present in place_data
+        for field in required_fields:
+            if field not in place_data:
+                raise ValueError(f"Missing required field: {field}")
+        # Create the Place object and save it
+        place = Place(**place_data)
+        self.place_repo.add(place)
+        storage.save(place)
+        # Return the created place as a dictionary
+        return place.to_dict()
 
     def get_place(self, place_id):
         # Placeholder for logic to retrieve a place by ID, including associated owner and amenities
