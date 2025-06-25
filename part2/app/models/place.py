@@ -1,7 +1,7 @@
 from app.models import user
-from app.models import storage
 from app.models.base_model import BaseModel
 from exo8 import User
+
 class Place(BaseModel):
     def __init__(self, title, description, price, latitude, longitude, owner_id):
         super().__init__()
@@ -83,20 +83,13 @@ class Place(BaseModel):
 
     @property
     def owner_id(self):
-        # Owner ID should be a private attribute to ensure encapsulation
         return self._owner_id
 
     @owner_id.setter
     def owner_id(self, value):
-        # Validate if owner_id is a non-empty string
         if not isinstance(value, str) or not value.strip():
             raise ValueError("Owner ID must be a non-empty string")
-        
-        # Check if the owner_id refers to an existing User
-        if not storage.get(User, value):
-            raise ValueError("Owner with ID {} does not exist".format(value))
         self._owner_id = value
-
     # ----------- Méthodes : Gestion des avis et des équipements -----------
 
     def add_review(self, review):

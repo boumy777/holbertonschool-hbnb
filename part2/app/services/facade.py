@@ -58,18 +58,17 @@ class HBnBFacade:
     # ___________ Place ___________
 
     def create_place(self, place_data):
-        # Validate required fields for place creation
-        required_fields = ['title', 'description', 'price', 'latitude', 'longitude', 'owner_id']
+        # Vérifie que l'owner_id est bien lié à un utilisateur existant
+        owner_id = place_data.get("owner_id")
+        if not owner_id or not self.user_repo.get(owner_id):
+            raise ValueError(f"Owner with ID {owner_id} does not exist")
 
-        # Ensure all required fields are present in place_data
-        for field in required_fields:
-            if field not in place_data:
-                raise ValueError(f"Missing required field: {field}")
-        # Create the Place object and save it
-        place = Place(**place_data)
+        try:
+            place = Place(**place_data)
+        except ValueError as e:
+            raise ValueError(f"Invalid place data: {e}")
+
         self.place_repo.add(place)
-        storage.save(place)
-        # Return the created place as a dictionary
         return place.to_dict()
 
     def get_place(self, place_id):
