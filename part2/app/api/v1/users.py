@@ -1,7 +1,19 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
+from flask import request
+from app.services.facade import HBnBFacade
+from app.persistence.repository import InMemoryRepository
+from app.services.facade import HBnBFacade
+
+
+user_repo = InMemoryRepository()
+place_repo = InMemoryRepository()
+review_repo = InMemoryRepository()
+amenity_repo = InMemoryRepository()
 
 api = Namespace('users', description='User operations')
+facade = HBnBFacade(user_repo, place_repo, review_repo, amenity_repo)
+
 
 # Modèle pour validation des entrées et documentation
 user_model = api.model('User', {

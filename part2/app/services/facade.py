@@ -3,13 +3,15 @@ from app.models.place import Place
 from app.models.review import Review
 from app.models.amenity import Amenity
 from app.persistence.repository import InMemoryRepository
+from app.persistence.repository import user_repo, place_repo, review_repo, amenity_repo
+
 
 class HBnBFacade:
-    def __init__(self):
-        self.user_repo = InMemoryRepository()
-        self.place_repo = InMemoryRepository()
-        self.review_repo = InMemoryRepository()
-        self.amenity_repo = InMemoryRepository()
+    def __init__(self, user_repo, place_repo, review_repo, amenity_repo):
+        self.user_repo = user_repo
+        self.place_repo = place_repo
+        self.review_repo = review_repo
+        self.amenity_repo = amenity_repo
 
     # ========== Génériques ==========
 
@@ -235,7 +237,8 @@ class HBnBFacade:
         self.review_repo.delete(review_id)
         return {"message": "Review deleted successfully"}
 
-            return None
+        return None
+
         review.text = review_data.get('text', review.text)
         review.rating = review_data.get('rating', review.rating)
 
@@ -255,4 +258,4 @@ class HBnBFacade:
         return None
 
 # Facade globale
-facade = HBnBFacade()
+facade = HBnBFacade(user_repo, place_repo, review_repo, amenity_repo)

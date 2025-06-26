@@ -29,3 +29,9 @@ class InMemoryRepository:
             if getattr(obj, attr_name, None) == attr_value:
                 return obj
         return None
+
+
+user_repo = InMemoryRepository()
+place_repo = InMemoryRepository()
+review_repo = InMemoryRepository()
+amenity_repo = InMemoryRepository()

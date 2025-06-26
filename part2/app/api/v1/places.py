@@ -1,14 +1,17 @@
 from flask_restx import Namespace, Resource, fields
 from flask import request
 from app.services.facade import HBnBFacade
+from app.persistence.repository import user_repo, place_repo, review_repo, amenity_repo
 
-facade = HBnBFacade()
+
+facade = HBnBFacade(user_repo, place_repo, review_repo, amenity_repo)
 api = Namespace('places', description='Place operations')
 
 
 amenity_model = api.model('PlaceAmenity', {
     'id': fields.String(description='Amenity ID'),
     'name': fields.String(description='Name of the amenity')
+})
 
 # Define the models for related entities
 amenity_model = api.model('PlaceAmenity', {
@@ -41,7 +44,6 @@ place_model = api.model('Place', {
     'owner': fields.Nested(user_model, description='Owner of the place'),
     'amenities': fields.List(fields.Nested(amenity_model), description='List of amenities'),
     'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
->>>>>>> 36c2a4a8c94b98e6772cef0e972ecdf30467c102
 })
 
 user_model = api.model('PlaceUser', {
@@ -63,17 +65,16 @@ place_model = api.model('Place', {
 
 @api.route('/')
 class PlaceList(Resource):
-<<<<<<< HEAD
-    @api.expect(place_model)
-    @api.response(201, 'Place successfully created')
-    @api.response(400, 'Invalid input data')
-=======
-    api.expect(place_model)
-    @api.response(201, 'Place successfully created')
-    @api.response(400, 'Invalid input data')
+
+
     def get(self):
         places = facade.get_all("Place")
         return [p.to_dict() for p in places]
+
+    @api.expect(place_model)
+    @api.response(201, 'Place successfully created')
+    @api.response(400, 'Invalid input data')
+
 
     def post(self):
         """Register a new place"""
