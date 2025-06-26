@@ -90,7 +90,7 @@ class HBnBFacade:
         storage.save(new_amenity)
         return new_amenity
 
-    def update(amenity_id, data):
+    def update_amenities(self, amenity_id, data):
         amenity = storage.get(Amenity, amenity_id)
         if amenity:
             amenity.update(data)
