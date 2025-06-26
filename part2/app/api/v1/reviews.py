@@ -1,7 +1,9 @@
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
+from app.persistence.repository import user_repo, place_repo, review_repo, amenity_repo
 
-facade = HBnBFacade()
+
+facade = HBnBFacade(user_repo, place_repo, review_repo, amenity_repo)
 api = Namespace('reviews', description='Review operations')
 
 review_model = api.model('Review', {

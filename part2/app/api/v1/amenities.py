@@ -1,8 +1,10 @@
 from flask_restx import Namespace, Resource, fields
 from app.services.facade import HBnBFacade
+from app.persistence.repository import user_repo, place_repo, review_repo, amenity_repo
+
 
 api = Namespace('amenities', description='Amenity operations')
-facade = HBnBFacade()
+facade = HBnBFacade(user_repo, place_repo, review_repo, amenity_repo)
 
 amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity')
