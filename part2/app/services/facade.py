@@ -40,31 +40,42 @@ class HBnBFacade:
         return self.user_repo.get(user_id)    
 
      # ___________ Amenity ___________
-    
-    def get_all():
-        return storage.all(Amenity)
 
-    def get_by_id(amenity_id):
-        return storage.get(Amenity, amenity_id)
+    def __init__(self, storage, Amenity):
+        self.storage = storage
+        self.Amenity = Amenity
 
-    def create(data):
-        new_amenity = Amenity()
-        for key, value in data.items():
-            if hasattr(new_amenity, key):
-                setattr(new_amenity, key, value)
-        storage.save(new_amenity)
-        return new_amenity
+    def all(self):
+        return list(self.storage.all(self.Amenity).values())
 
-    def update(amenity_id, data):
-        amenity = storage.get(Amenity, amenity_id)
-        if amenity:
-            amenity.update(data)
-            storage.save(amenity)
+    def get(self, amenity_id):
+        return self.storage.get(self.Amenity, amenity_id)
+
+    def create(self, data):
+        if 'name' not in data:
+            return None
+        amenity = self.Amenity(**data)
+        self.storage.new(amenity)
+        self.storage.save()
         return amenity
 
-    def delete(amenity_id):
-        return storage.delete(Amenity, amenity_id)
+    def update(self, amenity_id, data):
+        amenity = self.storage.get(self.Amenity, amenity_id)
+        if not amenity:
+            return None
+        for key, value in data.items():
+            if key not in ['id', 'created_at', 'updated_at']:
+                setattr(amenity, key, value)
+        self.storage.save()
+        return amenity
 
+    def delete(self, amenity_id):
+        amenity = self.storage.get(self.Amenity, amenity_id)
+        if not amenity:
+            return False
+        self.storage.delete(amenity)
+        self.storage.save()
+        return True
 
     # ___________ Place ___________
 
